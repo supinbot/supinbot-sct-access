@@ -9,8 +9,10 @@ var fs = require('fs');
 var TOKENS = {};
 var TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 
+var LANG = require('./languages');
+
 module.exports = function(SupinBot) {
-	var config = require('./config.js')(SupinBot.config);
+	var config = require('./config')(SupinBot.config);
 
 	function createToken(duration) {
 		var length = config.get('tokenLength');
@@ -52,7 +54,8 @@ module.exports = function(SupinBot) {
 	var app = express();
 	nunjucks.configure(path.resolve(__dirname, 'views'), {
 		autoescape: true,
-		express: app
+		express: app,
+		noCache: config.get('noCache')
 	});
 
 	app.use(bodyparser.urlencoded({extended: false}));
@@ -109,6 +112,30 @@ module.exports = function(SupinBot) {
 		res.json({ok: false, error: 'Session expired, refresh this page.'});
 	});
 
+	app.post('/snippet', function(req, res, next) {
+		if (req.session.logged && new Date(req.session.expDate).getTime() > new Date().getTime()) {
+			if (!req.body.title || req.body.title.length === 0) return res.json({ok: false, error: 'Title too short!'});
+			if (!req.body.code || req.body.code.length === 0) return res.json({ok: false, error: 'Snippet too short!'});
+			var lang = (LANG[req.body.lang]) ? req.body.lang : 'txt';
+
+			SupinBot.WebClient.files.upload('-.' + lang, {
+				title: req.body.title,
+				content: req.body.code,
+				filetype: lang,
+				channels: config.get('channel')
+			}, function(err, data) {
+				if (!err && data.ok) {
+					res.json({ok: true});
+				} else {
+					res.json({ok: false, error: 'The Slack API returned an error :('});
+				}
+			});
+		} else {
+			req.session.reset();
+			res.json({ok: false, error: 'Session expired, refresh this page.'});
+		}
+	});
+
 	app.use(function(req, res, next) {
 		if (req.session.logged && new Date(req.session.expDate).getTime() > new Date().getTime()) {
 			next();
@@ -127,7 +154,7 @@ module.exports = function(SupinBot) {
 	});
 
 	app.get('/snippet', function(req, res, next) {
-		res.render('snippet.html', {title: 'SUPINBOT SCT Access | Snippet'});
+		res.render('snippet.html', {title: 'SUPINBOT SCT Access | Snippet', lang: LANG});
 	});
 
 	app.listen(config.get('port'));

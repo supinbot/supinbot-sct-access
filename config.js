@@ -15,15 +15,15 @@ module.exports = function(config) {
 			format: String,
 			default: '#asc1'
 		},
-		url: {
-			doc: 'The URL of the front-end (with trailing /)',
-			format: 'url',
-			default: 'https://sct.supinbot.ovh/'
-		},
 		port: {
 			doc: 'The port on which express will listen on',
 			format: 'port',
 			default: 9090
+		},
+		noCache: {
+			doc: 'Disable template caching',
+			format: Boolean,
+			default: true
 		},
 		cookie: {
 			secret: {

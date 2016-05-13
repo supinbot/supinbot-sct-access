@@ -15,17 +15,25 @@
 		<form class="form-horizontal">
 			<fieldset>
 				<legend>Post a code snippet to the chat</legend>
-				<div class="form-group{% if error %} has-error{% endif %}">
+				<div class="form-group">
+					<label for="title" class="col-lg-2 control-label">Title</label>
+					<div class="col-lg-10">
+						<input type="text" class="form-control input-lg" id="title" name="title" placeholder="My Code Title">
+					</div>
+				</div>
+				<div class="form-group">
 					<label for="code" class="col-lg-2 control-label">Code</label>
 					<div class="col-lg-10">
 						<textarea rows="10" class="form-control input-lg" id="code" name="code" placeholder="print('Hello World!')"></textarea>
 					</div>
 				</div>
-				<div class="form-group{% if error %} has-error{% endif %}">
+				<div class="form-group">
 					<label for="lang" class="col-lg-2 control-label">Language</label>
 					<div class="col-lg-10">
 						<select class="form-control" name="lang" id="lang">
-							<option value="cpp">C++</option>
+							{% for code, displayName in lang %}
+							<option value="{{ code }}">{{ displayName }}</option>
+							{% endfor %}
 						</select>
 					</div>
 				</div>
@@ -53,7 +61,7 @@
 
 		$.ajax('/snippet', {
 			dataType: 'json',
-			data: {code: $('#code').val(), lang: 'c'},
+			data: {title: $('#title').val(), code: $('#code').val(), lang: $('#lang').val()},
 			method: 'POST'
 		}).done(function(data, textStatus, jqXHR) {
 			if (jqXHR.status == 200) {
