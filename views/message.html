@@ -15,7 +15,7 @@
 		<form class="form-horizontal">
 			<fieldset>
 				<legend>Post a message to the chat</legend>
-				<div class="form-group{% if error %} has-error{% endif %}">
+				<div class="form-group">
 					<label for="message" class="col-lg-2 control-label">Message</label>
 					<div class="col-lg-10">
 						<input type="text" class="form-control input-lg" id="message" name="message" placeholder="Hello!" autocomplete="off">
@@ -23,7 +23,7 @@
 				</div>
 				<div class="form-group">
 					<div class="col-lg-10 col-lg-offset-2">
-						<button id="post" class="btn btn-success pull-right">Post Message</button>
+						<button id="post" class="btn btn-success btn-raised pull-right">Post Message</button>
 					</div>
 				</div>
 			</fieldset>
@@ -33,7 +33,6 @@
 {% endblock %}
 
 {% block foot %}
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/sweetalert2/2.2.13/sweetalert2.min.js"></script>
 <script type="text/javascript">
 	$('#post').click(function(eventData) {
