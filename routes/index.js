@@ -109,3 +109,5 @@ router.get('/message', function(req, res, next) {
 router.get('/snippet', function(req, res, next) {
 	res.render('sct/snippet.html', {title: 'SUPINBOT SCT Access | Snippet', lang: LANG});
 });
+
+module.exports = router;
