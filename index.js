@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const co = require('co');
 
 const pkg = require('./package.json');
 const TokenStore = require('./lib/token-store');
@@ -19,8 +20,10 @@ module.exports = function(SupinBot) {
 	SupinBot.WebApp.registerRoute(pkg.name, '/sct', 'SCT Access', routes);
 
 	SupinBot.CommandManager.addCommand('scttoken', function(user, channel, args, argsStr) {
-		var token = tokenStoreInstance.createToken(args[0]);
-		SupinBot.postMessage(channel.id, `SCT Access Token created: *${token}*`);
+		co(function*() {
+			var token = yield tokenStoreInstance.createToken(args[0]);
+			SupinBot.postMessage(channel.id, `SCT Access Token created: *${token}*`);
+		});
 	})
 	.setDescription('Generates an access token to let SCT post to the chat.')
 	.addArgument('Session duration in minutes', 'int', config.get('cookie.duration'))
