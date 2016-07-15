@@ -28,11 +28,11 @@ router.use(function(req, res, next) {
 });
 
 router.get('/', function(req, res, next) {
-	res.redirect('/message');
+	res.redirect('/sct/message');
 });
 
 router.get('/login', function(req, res, next) {
-	if (req.sct_sess.logged) return res.redirect('/message');
+	if (req.sct_sess.logged) return res.redirect('/sct/message');
 
 	res.render('sct/login.html', {title: 'SUPINBOT SCT Access | Login'});
 });
@@ -44,7 +44,7 @@ router.post('/login', function(req, res, next) {
 			req.sct_sess.logged = true;
 			req.sct_sess.expDate = new Date(new Date().getTime() + tokenDuration * 60000);
 
-			return res.redirect('/message');
+			return res.redirect('/sct/message');
 		}
 	}
 
@@ -93,13 +93,13 @@ router.use(function(req, res, next) {
 	if (sessionCheck(req, res)) {
 		next();
 	} else {
-		res.redirect('/login');
+		res.redirect('/sct/login');
 	}
 });
 
 router.get('/logout', function(req, res, next) {
 	req.session.reset();
-	res.redirect('/login');
+	res.redirect('/sct/login');
 });
 
 router.get('/message', function(req, res, next) {
