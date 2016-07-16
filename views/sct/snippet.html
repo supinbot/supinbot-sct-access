@@ -58,13 +58,15 @@
 
 		$(self).addClass('disabled');
 
-		$.ajax('/snippet', {
+		$.ajax('/sct/snippet', {
 			dataType: 'json',
 			data: {title: $('#title').val(), code: $('#code').val(), lang: $('#lang').val()},
 			method: 'POST'
 		}).done(function(data, textStatus, jqXHR) {
 			if (jqXHR.status == 200) {
 				if (data.ok) {
+					$('#title').val('');
+					$('#code').val('');
 					swal('Success!', 'Code snippet successfully posted to Slack.', 'success');
 				} else {
 					swal('Error!', data.error, 'error');

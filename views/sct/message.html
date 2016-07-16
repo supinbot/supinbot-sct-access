@@ -42,13 +42,14 @@
 
 		$(self).addClass('disabled');
 
-		$.ajax('/message', {
+		$.ajax('/sct/message', {
 			dataType: 'json',
 			data: {message: $('#message').val()},
 			method: 'POST'
 		}).done(function(data, textStatus, jqXHR) {
 			if (jqXHR.status == 200) {
 				if (data.ok) {
+					$('#message').val('');
 					swal('Success!', 'Message successfully posted to Slack.', 'success');
 				} else {
 					swal('Error!', data.error, 'error');

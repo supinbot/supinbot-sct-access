@@ -26,6 +26,6 @@ module.exports = function(SupinBot) {
 		});
 	})
 	.setDescription('Generates an access token to let SCT post to the chat.')
-	.addArgument('Session duration in minutes', 'int', config.get('cookie.duration'))
+	.addArgument('Session duration in minutes', 'int', config.get('default_duration'))
 	.adminOnly();
 };

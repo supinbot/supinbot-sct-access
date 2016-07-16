@@ -1,5 +1,6 @@
 'use strict';
 
+const co = require('co');
 const express = require('express');
 const sessions = require("client-sessions");
 const LANG = require('../lib/languages');
@@ -11,8 +12,11 @@ var router = express.Router();
 router.use(sessions({
 	cookieName: 'sct_sess',
 	secret: config.get('cookie.secret'),
-	duration: config.get('cookie.duration'),
-	activeDuration: config.get('cookie.active_duration')
+	duration: config.get('cookie.duration') * 60000,
+	activeDuration: config.get('cookie.active_duration'),
+	cookie: {
+		path: '/sct'
+	}
 }));
 
 function sessionCheck(req, res) {
@@ -38,17 +42,23 @@ router.get('/login', function(req, res, next) {
 });
 
 router.post('/login', function(req, res, next) {
-	if (req.body.token) {
-		var tokenDuration = tokenStoreInstance.getToken(req.body.token.toUpperCase());
-		if (tokenDuration) {
-			req.sct_sess.logged = true;
-			req.sct_sess.expDate = new Date(new Date().getTime() + tokenDuration * 60000);
+	co(function*() {
+		if (req.body.token) {
+			var token = req.body.token.toUpperCase();
+			var tokenDuration = yield tokenStoreInstance.getToken(token);
 
-			return res.redirect('/sct/message');
+			if (tokenDuration) {
+				yield tokenStoreInstance.useToken(token);
+
+				req.sct_sess.logged = true;
+				req.sct_sess.expDate = new Date(new Date().getTime() + tokenDuration * 60000);
+
+				return res.redirect('/sct/message');
+			}
 		}
-	}
 
-	res.render('sct/login.html', {title: 'SUPINBOT SCT Access | Login', error: true});
+		res.render('sct/login.html', {title: 'SUPINBOT SCT Access | Login', error: true});
+	});
 });
 
 router.post('/message', function(req, res, next) {
@@ -61,7 +71,7 @@ router.post('/message', function(req, res, next) {
 		return res.json({ok: false, error: 'Invalid message!'});
 	}
 
-	req.session.reset();
+	req.sct_sess.reset();
 	res.json({ok: false, error: 'Session expired, refresh this page.'});
 });
 
@@ -84,7 +94,7 @@ router.post('/snippet', function(req, res, next) {
 			}
 		});
 	} else {
-		req.session.reset();
+		req.sct_sess.reset();
 		res.json({ok: false, error: 'Session expired, refresh this page.'});
 	}
 });
@@ -98,7 +108,7 @@ router.use(function(req, res, next) {
 });
 
 router.get('/logout', function(req, res, next) {
-	req.session.reset();
+	req.sct_sess.reset();
 	res.redirect('/sct/login');
 });
 
