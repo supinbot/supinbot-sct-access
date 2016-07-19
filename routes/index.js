@@ -3,11 +3,24 @@
 const co = require('co');
 const express = require('express');
 const sessions = require("client-sessions");
+const RateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
+const redis = require('redis');
 const LANG = require('../lib/languages');
 const config = require('../index').config;
 var tokenStoreInstance = require('../index').tokenStoreInstance;
 var SupinBot = require('../index').SupinBot;
 var router = express.Router();
+
+var loginLimit = new RateLimit({
+	windowMs: config.get('rate_limit.window'),
+	delayMs: config.get('rate_limit.delay'),
+	max: config.get('rate_limit.max'),
+	store: new RedisStore({
+		expiry: config.get('rate_limit.window') / 1000,
+		client: redis.createClient(SupinBot.config.get('redis'), {db: config.get('rate_limit.redisDb')})
+	})
+});
 
 router.use(sessions({
 	cookieName: 'sct_sess',
@@ -41,7 +54,7 @@ router.get('/login', function(req, res, next) {
 	res.render('sct/login.html', {title: 'SUPINBOT SCT Access | Login'});
 });
 
-router.post('/login', function(req, res, next) {
+router.post('/login', loginLimit, function(req, res, next) {
 	co(function*() {
 		if (req.body.token) {
 			var token = req.body.token.toUpperCase();
