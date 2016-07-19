@@ -33,11 +33,11 @@ router.use(sessions({
 }));
 
 function sessionCheck(req, res) {
-	return (req.sct_sess.logged && new Date(req.sct_sess.expDate).getTime() > new Date().getTime()) ? true : false;
+	return req.sct_sess.logged && new Date(req.sct_sess.expDate).getTime() > new Date().getTime();
 }
 
 router.use(function(req, res, next) {
-	if (req.sct_sess.logged) {
+	if (sessionCheck(res, res)) {
 		res.locals.logged = true;
 	}
 
@@ -49,7 +49,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/login', function(req, res, next) {
-	if (req.sct_sess.logged) return res.redirect('/sct/message');
+	if (sessionCheck(res, res)) return res.redirect('/sct/message');
 
 	res.render('sct/login.html', {title: 'SUPINBOT SCT Access | Login'});
 });
