@@ -37,7 +37,7 @@ function sessionCheck(req, res) {
 }
 
 router.use(function(req, res, next) {
-	if (sessionCheck(res, res)) {
+	if (sessionCheck(req, res)) {
 		res.locals.logged = true;
 	}
 
@@ -49,7 +49,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/login', function(req, res, next) {
-	if (sessionCheck(res, res)) return res.redirect('/sct/message');
+	if (sessionCheck(req, res)) return res.redirect('/sct/message');
 
 	res.render('sct/login.html', {title: 'SUPINBOT SCT Access | Login'});
 });

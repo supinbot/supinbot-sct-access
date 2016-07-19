@@ -1,6 +1,6 @@
 {
   "name": "supinbot-sct-access",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Plugin for SUPINBOT to let SCT post to slack without requiring an account.",
   "main": "index.js",
   "repository": {
