@@ -44,7 +44,7 @@
 
 		$.ajax('/sct/message', {
 			dataType: 'json',
-			data: {message: $('#message').val()},
+			data: {message: $('#message').val(), _csrf: '{{ csrfToken }}'},
 			method: 'POST'
 		}).done(function(data, textStatus, jqXHR) {
 			if (jqXHR.status == 200) {

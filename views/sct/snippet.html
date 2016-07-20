@@ -60,7 +60,7 @@
 
 		$.ajax('/sct/snippet', {
 			dataType: 'json',
-			data: {title: $('#title').val(), code: $('#code').val(), lang: $('#lang').val()},
+			data: {title: $('#title').val(), code: $('#code').val(), lang: $('#lang').val(), _csrf: '{{ csrfToken }}'},
 			method: 'POST'
 		}).done(function(data, textStatus, jqXHR) {
 			if (jqXHR.status == 200) {

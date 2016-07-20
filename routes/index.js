@@ -5,6 +5,7 @@ const express = require('express');
 const sessions = require("client-sessions");
 const RateLimit = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
+const csrf = require('csurf');
 const redis = require('redis');
 const LANG = require('../lib/languages');
 const config = require('../index').config;
@@ -22,11 +23,15 @@ var loginLimit = new RateLimit({
 	})
 });
 
+var csrfMiddleware = csrf({
+	sessionKey: 'sct_sess'
+});
+
 router.use(sessions({
 	cookieName: 'sct_sess',
 	secret: config.get('cookie.secret'),
 	duration: config.get('cookie.duration') * 60000,
-	activeDuration: config.get('cookie.active_duration'),
+	activeDuration: 0,
 	cookie: {
 		path: '/sct'
 	}
@@ -63,6 +68,7 @@ router.post('/login', loginLimit, function(req, res, next) {
 			if (tokenDuration) {
 				yield tokenStoreInstance.useToken(token);
 
+				req.sct_sess.setDuration(tokenDuration * 60000);
 				req.sct_sess.logged = true;
 				req.sct_sess.expDate = new Date(new Date().getTime() + tokenDuration * 60000);
 
@@ -74,7 +80,7 @@ router.post('/login', loginLimit, function(req, res, next) {
 	});
 });
 
-router.post('/message', function(req, res, next) {
+router.post('/message', csrfMiddleware, function(req, res, next) {
 	if (sessionCheck(req, res)) {
 		if (req.body.message && req.body.message.length > 0) {
 			SupinBot.postMessage(config.get('channel'), req.body.message);
@@ -88,7 +94,7 @@ router.post('/message', function(req, res, next) {
 	res.json({ok: false, error: 'Session expired, refresh this page.'});
 });
 
-router.post('/snippet', function(req, res, next) {
+router.post('/snippet', csrfMiddleware, function(req, res, next) {
 	if (sessionCheck(req, res)) {
 		if (!req.body.title || req.body.title.length === 0) return res.json({ok: false, error: 'Invalid title!'});
 		if (!req.body.code || req.body.code.length === 0) return res.json({ok: false, error: 'Invalid snippet!'});
@@ -125,12 +131,17 @@ router.get('/logout', function(req, res, next) {
 	res.redirect('/sct/login');
 });
 
-router.get('/message', function(req, res, next) {
-	res.render('sct/message.html', {title: 'SUPINBOT SCT Access | Message'});
+router.get('/message', csrfMiddleware, function(req, res, next) {
+	res.render('sct/message.html', {title: 'SUPINBOT SCT Access | Message', csrfToken: req.csrfToken()});
 });
 
-router.get('/snippet', function(req, res, next) {
-	res.render('sct/snippet.html', {title: 'SUPINBOT SCT Access | Snippet', lang: LANG});
+router.get('/snippet', csrfMiddleware, function(req, res, next) {
+	res.render('sct/snippet.html', {title: 'SUPINBOT SCT Access | Snippet', csrfToken: req.csrfToken(), lang: LANG});
+});
+
+router.use(function(err, req, res, next) {
+	if (err.code !== 'EBADCSRFTOKEN') return next(err);
+	res.json({ok: false, error: 'Invalid CSRF Token.'});
 });
 
 module.exports = router;
