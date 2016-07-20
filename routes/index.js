@@ -20,7 +20,10 @@ var loginLimit = new RateLimit({
 	store: new RedisStore({
 		expiry: config.get('rate_limit.window') / 1000,
 		client: redis.createClient(SupinBot.config.get('redis'), {db: config.get('rate_limit.redisDb')})
-	})
+	}),
+	handler: function(req, res) {
+		res.renderError(429);
+	}
 });
 
 var csrfMiddleware = csrf({
